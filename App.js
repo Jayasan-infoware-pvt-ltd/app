@@ -1,5 +1,5 @@
 // App.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react'; // 1. Import useCallback
 import { NavigationContainer } from '@react-navigation/native';
 import { ActivityIndicator, View } from 'react-native';
 import auth from '@react-native-firebase/auth';
@@ -10,16 +10,17 @@ function App() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
 
-  // Handle user state changes
-  function onAuthStateChanged(user) {
+  // 2. Wrap the function in useCallback
+  const onAuthStateChanged = useCallback(user => {
     setUser(user);
     if (initializing) setInitializing(false);
-  }
+  }, [initializing]);
 
   useEffect(() => {
+    // 3. The function is now stable, so the effect only runs once.
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber; // unsubscribe on unmount
-  }, []);
+  }, [onAuthStateChanged]); // 4. Add the memoized function to the dependency array
 
   if (initializing) {
     return (
